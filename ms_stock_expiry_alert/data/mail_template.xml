@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="mail_template_expiry_alert" model="mail.template">
+        <field name="name">Stock Expiry Alert - Lot Notification</field>
+        <field name="model_id" ref="stock.model_stock_lot"/>
+        <field name="subject">Stock Expiry Alert: {{ object.name }} - {{ object.product_id.display_name }}</field>
+        <field name="email_from">${(user.email_formatted or '')}</field>
+        <field name="body_html" type="html">
+            <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+
+                <h2 style="margin-bottom: 15px;">
+                    Stock Expiry Alert
+                </h2>
+
+                <p>
+                    The following stock lot/serial number requires attention:
+                </p>
+
+                <table style="border-collapse: collapse; width: 100%; max-width: 700px;">
+                    <tr>
+                        <td style="padding: 8px; font-weight: bold; border: 1px solid #ddd;">
+                            Product
+                        </td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            <t t-out="object.product_id.display_name"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 8px; font-weight: bold; border: 1px solid #ddd;">
+                            Lot / Serial
+                        </td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            <t t-out="object.name"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 8px; font-weight: bold; border: 1px solid #ddd;">
+                            Quantity
+                        </td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            <t t-out="object.expiry_stock_quantity"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 8px; font-weight: bold; border: 1px solid #ddd;">
+                            Expiry Date
+                        </td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            <t t-out="object.expiration_date"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 8px; font-weight: bold; border: 1px solid #ddd;">
+                            Days Remaining
+                        </td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            <t t-out="object.expiry_days_remaining"/>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 8px; font-weight: bold; border: 1px solid #ddd;">
+                            Status
+                        </td>
+
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+
+                            <t t-if="object.expiry_alert_status in ['expired', 'critical']">
+                                <span style="background-color: #dc3545; color: #ffffff; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block;">
+                                    <t t-out="(object.expiry_alert_status or '').capitalize()"/>
+                                </span>
+                            </t>
+
+                            <t t-elif="object.expiry_alert_status == 'warning'">
+                                <span style="background-color: #ffc107; color: #000000; padding: 3px 8px; border-radius: 4px; font-weight: bold; font-size: 12px; display: inline-block;">
+                                    Warning
+                                </span>
+                            </t>
+
+                            <t t-else="">
+                                <strong>
+                                    <t t-out="(object.expiry_alert_status or '').capitalize()"/>
+                                </strong>
+                            </t>
+
+                        </td>
+                        
+                    </tr>
+
+                    <tr>
+                        <td style="padding: 8px; font-weight: bold; border: 1px solid #ddd;">
+                            Value at Risk
+                        </td>
+                        <td style="padding: 8px; border: 1px solid #ddd;">
+                            <t t-out="object.expiry_value_at_risk"/>
+                        </td>
+                    </tr>
+                </table>
+
+                <p style="margin-top: 20px;">
+                    Please review this lot and take the necessary action before
+                    the product expires.
+                </p>
+
+                <p style="margin-top: 25px; color: #777;">
+                    This is an automated notification from Stock Expiry Alert.
+                </p>
+
+            </div>
+        </field>
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+    <record id="mail_template_expiry_digest" model="mail.template">
+        <field name="name">Stock Expiry Alert - Daily Digest</field>
+        <field name="model_id" ref="model_ms_stock_expiry_config"/>
+        <field name="subject">
+            [Stock Expiry Alert] Daily Expiry Digest
+        </field>
+        <field name="email_from">${(user.email_formatted or '')}</field>
+
+        <field name="body_html" type="html">
+            <div style="font-family: Arial, sans-serif; font-size: 14px; color: #333;">
+
+                <h2 style="margin-bottom: 5px;">
+                    Daily Expiry Digest
+                </h2>
+
+                <p style="color: #777;">
+                    Stock expiry summary for
+                    <t t-out="format_date(object.create_date)"/>
+                </p>
+
+                <t t-set="lots"
+                   t-value="env['stock.lot'].browse(ctx.get('expiry_lot_ids', []))"/>
+
+                <t t-set="critical_lots"
+                   t-value="lots.filtered(lambda lot: lot.expiry_alert_status == 'critical')"/>
+
+                <t t-set="expired_lots"
+                   t-value="lots.filtered(lambda lot: lot.expiry_alert_status == 'expired')"/>
+
+                <t t-set="warning_lots"
+                   t-value="lots.filtered(lambda lot: lot.expiry_alert_status == 'warning')"/>
+
+                <table style="border-collapse: collapse; width: 100%; margin-bottom: 25px;">
+                    <tr>
+
+                        <td style="width: 33%; padding: 15px; border: 1px solid #ddd; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold;">
+                                <t t-out="len(lots)"/>
+                            </div>
+                            <div style="color: #777;">
+                                Lots Within Threshold
+                            </div>
+                        </td>
+
+                        <td style="width: 33%; padding: 15px; border: 1px solid #ddd; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold;">
+                                <t t-out="len(critical_lots)"/>
+                            </div>
+                            <div style="color: #777;">
+                                Critical
+                            </div>
+                        </td>
+
+                        <td style="width: 33%; padding: 15px; border: 1px solid #ddd; text-align: center;">
+                            <div style="font-size: 24px; font-weight: bold;">
+                                <t t-out="len(expired_lots)"/>
+                            </div>
+                            <div style="color: #777;">
+                                Already Expired
+                            </div>
+                        </td>
+
+                    </tr>
+                </table>
+
+                <h3 style="margin-bottom: 10px;">
+                    Expiring Lots
+                </h3>
+
+                <table style="border-collapse: collapse; width: 100%;">
+
+                    <thead>
+                        <tr>
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">
+                                Product
+                            </th>
+
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">
+                                Lot / Serial
+                            </th>
+
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: right;">
+                                Quantity
+                            </th>
+
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: left;">
+                                Expiry Date
+                            </th>
+
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">
+                                Days
+                            </th>
+
+                            <th style="padding: 8px; border: 1px solid #ddd; text-align: center;">
+                                Status
+                            </th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        <t t-foreach="lots" t-as="lot">
+
+                            <tr>
+
+                                <td style="padding: 8px; border: 1px solid #ddd;">
+                                    <t t-out="lot.product_id.display_name"/>
+                                </td>
+
+                                <td style="padding: 8px; border: 1px solid #ddd;">
+                                    <t t-out="lot.name"/>
+                                </td>
+
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: right;">
+                                    <t t-out="lot.expiry_stock_quantity"/>
+                                </td>
+
+                                <td style="padding: 8px; border: 1px solid #ddd;">
+                                    <t t-out="lot.expiration_date"/>
+                                </td>
+
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
+                                    <t t-out="lot.expiry_days_remaining"/>
+                                </td>
+
+                                <td style="padding: 8px; border: 1px solid #ddd; text-align: center;">
+                                    <t t-out="lot.expiry_alert_status"/>
+                                </td>
+
+                            </tr>
+
+                        </t>
+
+                    </tbody>
+
+                </table>
+
+                <p style="margin-top: 25px;">
+                    Please review the listed lots and take the necessary action
+                    to prevent stock from expiring unnoticed.
+                </p>
+
+                <p style="margin-top: 25px; color: #777;">
+                    This is an automated daily digest from Stock Expiry Alert.
+                </p>
+
+            </div>
+        </field>
+
+        <field name="auto_delete" eval="True"/>
+    </record>
+
+</odoo>

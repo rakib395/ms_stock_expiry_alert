@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_ms_stock_expiry_config_list" model="ir.ui.view">
+        <field name="name">ms.stock.expiry.config.list</field>
+        <field name="model">ms.stock.expiry.config</field>
+        <field name="arch" type="xml">
+            <list string="Stock Expiry Alert Configurations">
+                <field name="name"/>
+                <field name="alert_threshold"/>
+                <field name="critical_threshold"/>
+                <field name="check_frequency"/>
+                <field name="active"/>
+                <field name="last_check_datetime"/>
+                <field name="last_digest_datetime"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="view_ms_stock_expiry_config_form" model="ir.ui.view">
+        <field name="name">ms.stock.expiry.config.form</field>
+        <field name="model">ms.stock.expiry.config</field>
+        <field name="arch" type="xml">
+
+            <form string="Stock Expiry Alert Configuration">
+
+                <header>
+                    <button
+                        name="action_run_expiry_check"
+                        type="object"
+                        string="Run Expiry Check"
+                        class="btn-primary"
+                    />
+
+                    <button
+                        name="action_send_daily_digest"
+                        type="object"
+                        string="Send Digest Now"
+                        class="btn-secondary"
+                    />
+                </header>
+
+                <sheet>
+
+                    <widget name="web_ribbon" title="Archived" bg_color="text-bg-danger" invisible="active"/>
+
+                    <div class="oe_title">
+
+                        <label for="name"/>
+                        <h1>
+                            <field name="name" placeholder="Configuration Name"/>
+                        </h1>
+
+                        <div class="d-flex align-items-center gap-2 mt-2">
+                            <field name="active" widget="boolean_toggle" class="mb-0"/>
+                            <label for="active" string="Active Configuration" class="fw-bold m-0"/>
+                        </div>
+
+                    </div>
+
+                    <group string="Expiry Thresholds">
+
+                        <group>
+                            <field name="alert_threshold"/>
+                            <div class="text-primary" style="font-size: 11px; margin-top: -8px; font-weight: 500;">
+                                Alert status when expiring within these days.
+                            </div>
+                        </group>
+
+                        <group>
+                            <field name="critical_threshold"/>
+                            <div class="text-primary" style="font-size: 11px; margin-top: -8px; font-weight: 500;">
+                                Critical status when expiring within these days.
+                            </div>
+                        </group>
+
+                    </group>
+
+                    <group string="Scheduled Check">
+
+                        <group>
+                            <field name="check_frequency"/>
+                            <field name="check_time"/>
+                        </group>
+
+                        <group>
+                            <field name="last_check_datetime"
+                                   readonly="1"/>
+                            <field name="last_digest_datetime"
+                                   readonly="1"/>
+                        </group>
+
+                    </group>
+
+                    <group string="Notification Settings">
+
+                        <group>
+                            <field name="recipient_ids"
+                                   widget="many2many_tags"/>
+
+                            <field name="recipient_partner_ids"
+                                   widget="many2many_tags"/>
+                        </group>
+
+                        <group>
+                            <field name="delivery_daily_digest"/>
+
+                            <field name="delivery_immediate_critical"/>
+                        </group>
+
+                    </group>
+
+                    <group string="Warehouse Scope">
+
+                        <group>
+                            <field name="all_warehouses"/>
+                        </group>
+
+                        <group
+                            invisible="all_warehouses"
+                        >
+                            <field name="warehouse_ids"
+                                   widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                        </group>
+
+                    </group>
+
+                    <group string="Product Category Scope">
+
+                        <group>
+                            <field name="all_categories"/>
+                        </group>
+
+                        <group
+                            invisible="all_categories"
+                        >
+                            <field name="category_ids"
+                                   widget="many2many_tags"
+                                   options="{'no_create': True}"/>
+                        </group>
+
+                    </group>
+
+                    <group string="Expired Lots">
+
+                        <field name="include_expired_lots"/>
+
+                        <div class="text-muted">
+                            When enabled, already-expired lots will also
+                            appear in the expiry alert list and digest.
+                        </div>
+
+                    </group>
+
+                </sheet>
+
+            </form>
+
+        </field>
+    </record>
+
+    <record id="action_ms_stock_expiry_config" model="ir.actions.act_window">
+        <field name="name">Configuration</field>
+        <field name="res_model">ms.stock.expiry.config</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id" ref="view_ms_stock_expiry_config_list"/>
+    </record>
+
+</odoo>

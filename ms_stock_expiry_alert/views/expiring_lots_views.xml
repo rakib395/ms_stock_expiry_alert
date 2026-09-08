@@ -1,0 +1,232 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="view_stock_lot_expiry_alert_list" model="ir.ui.view">
+        <field name="name">stock.lot.expiry.alert.list</field>
+        <field name="model">stock.lot</field>
+        <field name="arch" type="xml">
+
+            <list string="Expiring Lots"
+                  create="0"
+                  edit="0"
+                  delete="0">
+
+                <field name="product_id"/>
+                <field name="name" string="Lot / Serial"/>
+                <field name="expiry_stock_quantity"
+                       string="Quantity"/>
+                <field name="expiry_stock_location_id"
+                       string="Location"/>
+                <field name="expiration_date"/>
+                <field name="expiry_days_remaining"/>
+                <field name="expiry_alert_status" 
+                        widget="badge" 
+                        decoration-danger="expiry_alert_status in ('critical', 'expired')" 
+                        decoration-warning="expiry_alert_status == 'warning'"/>
+                <field name="expiry_value_at_risk"/>
+                <field name="expiry_alert_last_notified"/>
+
+                <button
+                    name="action_notify_expiry"
+                    type="object"
+                    string="Notify Now"
+                    class="btn-primary"
+                    icon="fa-bell"
+                />
+
+            </list>
+
+        </field>
+    </record>
+
+    <record id="view_stock_lot_expiry_alert_form" model="ir.ui.view">
+        <field name="name">stock.lot.expiry.alert.form</field>
+        <field name="model">stock.lot</field>
+        <field name="arch" type="xml">
+
+            <form string="Expiry Alert">
+
+                <header>
+
+                    <button
+                        name="action_notify_expiry"
+                        type="object"
+                        string="Notify Now"
+                        class="btn-primary"
+                        icon="fa-bell"
+                    />
+
+                </header>
+
+                <sheet>
+
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name"/>
+                        </h1>
+                    </div>
+
+                    <group>
+
+                        <group string="Product Information">
+                            <field name="product_id"/>
+                            <field name="company_id"/>
+                        </group>
+
+                        <group string="Expiry Information">
+                            <field name="expiration_date"/>
+                            <field name="expiry_days_remaining"/>
+                            <field name="expiry_alert_status" 
+                                    widget="badge" 
+                                    decoration-danger="expiry_alert_status in ('critical', 'expired')" 
+                                    decoration-warning="expiry_alert_status == 'warning'"/>
+                            <field name="expiry_alert_enabled"/>
+                        </group>
+
+                    </group>
+
+                    <group string="Stock Information">
+
+                        <group>
+                            <field name="expiry_stock_quantity"
+                                   string="Quantity"/>
+                            <field name="expiry_stock_location_id"
+                                   string="Location"/>
+                        </group>
+
+                        <group>
+                            <field name="expiry_value_at_risk"/>
+                        </group>
+
+                    </group>
+
+                    <group string="Notification Information">
+
+                        <group>
+                            <field name="expiry_alert_last_notified"/>
+                            <field name="expiry_alert_notification_count"/>
+                        </group>
+
+                    </group>
+
+                </sheet>
+
+            </form>
+
+        </field>
+    </record>
+
+    <record id="view_stock_lot_expiry_alert_search" model="ir.ui.view">
+        <field name="name">stock.lot.expiry.alert.search</field>
+        <field name="model">stock.lot</field>
+        <field name="arch" type="xml">
+
+            <search string="Search Expiring Lots">
+
+                <field name="product_id"/>
+                <field name="name"/>
+                <field name="expiry_stock_location_id"
+                       string="Location"/>
+                <field name="expiration_date"/>
+
+                <separator/>
+
+                <filter
+                    name="filter_warning"
+                    string="Warning"
+                    domain="[('expiry_alert_status', '=', 'warning')]"
+                />
+
+                <filter
+                    name="filter_critical"
+                    string="Critical"
+                    domain="[('expiry_alert_status', '=', 'critical')]"
+                />
+
+                <filter
+                    name="filter_expired"
+                    string="Expired"
+                    domain="[('expiry_alert_status', '=', 'expired')]"
+                />
+
+                <filter
+                    name="filter_alert_lots"
+                    string="Within Threshold"
+                    domain="[('expiry_alert_status', 'in', ['warning', 'critical'])]"
+                />
+
+                <separator/>
+
+                <filter
+                    name="filter_expiring_today"
+                    string="Expiring Today"
+                    domain="[('expiry_days_remaining', '=', 0)]"
+                />
+
+                <filter
+                    name="filter_expiring_7_days"
+                    string="Next 7 Days"
+                    domain="[
+                        ('expiry_days_remaining', '&gt;=', 0),
+                        ('expiry_days_remaining', '&lt;=', 7)
+                    ]"
+                />
+
+                <group>
+
+                    <filter
+                        name="group_product"
+                        string="Product"
+                        context="{'group_by': 'product_id'}"
+                    />
+
+                    <filter
+                        name="group_location"
+                        string="Location"
+                        context="{'group_by': 'expiry_stock_location_id'}"
+                    />
+
+                    <filter
+                        name="group_status"
+                        string="Status"
+                        context="{'group_by': 'expiry_alert_status'}"
+                    />
+
+                    <filter
+                        name="group_expiry_date"
+                        string="Expiry Date"
+                        context="{'group_by': 'expiration_date'}"
+                    />
+
+                </group>
+
+            </search>
+
+        </field>
+    </record>
+
+    <record id="action_stock_expiring_lots" model="ir.actions.act_window">
+        <field name="name">Expiring Lots</field>
+        <field name="res_model">stock.lot</field>
+        <field name="view_mode">list,form</field>
+        <field name="view_id"
+               ref="view_stock_lot_expiry_alert_list"/>
+
+        <field name="domain">
+            [
+                ('expiration_date', '!=', False),
+                ('expiry_alert_status',
+                 'in',
+                 ['warning', 'critical', 'expired'])
+            ]
+        </field>
+
+        <field name="context">
+            {
+                'search_default_filter_alert_lots': 1
+            }
+        </field>
+
+    </record>
+
+</odoo>

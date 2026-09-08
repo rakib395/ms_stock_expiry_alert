@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <menuitem
+        id="menu_stock_expiry_alert_root"
+        name="Stock Expiry Alert"
+        sequence="50"
+        groups="stock.group_stock_user"
+    />
+
+    <menuitem
+        id="menu_stock_expiry_alert_expiring_lots"
+        name="Expiring Lots"
+        parent="menu_stock_expiry_alert_root"
+        action="action_stock_expiring_lots"
+        sequence="10"
+        groups="stock.group_stock_user"
+    />
+
+    <menuitem
+        id="menu_stock_expiry_alert_configuration"
+        name="Configuration"
+        parent="menu_stock_expiry_alert_root"
+        action="action_ms_stock_expiry_config"
+        sequence="20"
+        groups="stock.group_stock_manager"
+    />
+
+</odoo>
