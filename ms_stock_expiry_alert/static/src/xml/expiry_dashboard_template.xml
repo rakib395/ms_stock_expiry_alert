@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+
+    <t t-name="ms_stock_expiry.ExpiryDashboard" owl="1">
+        <div class="o_expiry_dashboard">
+
+            <div class="expiry-dashboard-header">
+                <div>
+                    <h2>Stock Expiry Dashboard</h2>
+                    <p>Monitor stock lots that are approaching or have passed their expiry date.</p>
+                </div>
+                <div class="expiry-dashboard-actions">
+                    <button type="button" class="btn btn-outline-secondary" t-on-click="refreshDashboard" title="Refresh Dashboard">
+                        <i class="fa fa-refresh me-1"/>Refresh
+                    </button>
+                </div>
+            </div>
+
+            <div class="expiry-kpi-grid">
+
+                <div class="expiry-kpi-card expiry-kpi-blue" t-on-click="() => this.openFilteredLots([['expiry_alert_status', 'in', ['warning', 'critical', 'expired']]], 'Lots Within Threshold')">
+                    <div class="expiry-kpi-icon">
+                        <i class="fa fa-clock-o"/>
+                    </div>
+                    <div class="expiry-kpi-content">
+                        <span class="expiry-kpi-label">Lots Within Threshold</span>
+                        <strong><t t-esc="kpis.within_threshold"/></strong>
+                        <small>Require attention</small>
+                    </div>
+                </div>
+
+                <div class="expiry-kpi-card expiry-kpi-red" t-on-click="() => this.openFilteredLots([['expiry_alert_status', '=', 'critical']], 'Critical Lots')">
+                    <div class="expiry-kpi-icon">
+                        <i class="fa fa-exclamation-triangle"/>
+                    </div>
+                    <div class="expiry-kpi-content">
+                        <span class="expiry-kpi-label">Critical Expiry</span>
+                        <strong><t t-esc="kpis.critical"/></strong>
+                        <small>Immediate attention</small>
+                    </div>
+                </div>
+
+                <div class="expiry-kpi-card expiry-kpi-dark" t-on-click="() => this.openFilteredLots([['expiry_alert_status', '=', 'expired']], 'Expired Lots')">
+                    <div class="expiry-kpi-icon">
+                        <i class="fa fa-calendar-times-o"/>
+                    </div>
+                    <div class="expiry-kpi-content">
+                        <span class="expiry-kpi-label">Already Expired</span>
+                        <strong><t t-esc="kpis.expired"/></strong>
+                        <small>Past expiry date</small>
+                    </div>
+                </div>
+
+                <div class="expiry-kpi-card expiry-kpi-orange">
+                    <div class="expiry-kpi-icon">
+                        <i class="fa fa-money"/>
+                    </div>
+                    <div class="expiry-kpi-content">
+                        <span class="expiry-kpi-label">Value at Risk</span>
+                        <strong><t t-esc="formatCurrency(kpis.value_at_risk)"/></strong>
+                        <small>Inventory value at risk</small>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="expiry-table-card">
+
+                <div class="expiry-table-header">
+                    <div>
+                        <h3><i class="fa fa-cubes me-2"/>Expiring Lots</h3>
+                        <span>Lots requiring attention based on the configured expiry thresholds.</span>
+                    </div>
+                    <div class="expiry-table-count">
+                        <t t-esc="lots.length"/> <span>records</span>
+                    </div>
+                </div>
+
+                <div t-if="loading" class="expiry-empty-state">
+                    <i class="fa fa-spinner fa-spin fa-2x"/>
+                    <p>Loading expiry information...</p>
+                </div>
+
+                <div t-elif="!lots.length" class="expiry-empty-state">
+                    <i class="fa fa-check-circle-o"/>
+                    <h4>No Expiring Lots</h4>
+                    <p>There are currently no lots requiring expiry attention.</p>
+                </div>
+
+                <div t-else="" class="table-responsive">
+                    <table class="table expiry-lots-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Lot / Serial</th>
+                                <th class="text-end">Quantity</th>
+                                <th>Location</th>
+                                <th>Expiry Date</th>
+                                <th class="text-center">Remaining</th>
+                                <th class="text-center">Status</th>
+                                <th class="text-end">Value at Risk</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="lots" t-as="lot" t-key="lot.id">
+                                <tr class="expiry-lot-row" t-on-click="() => this.openLot(lot.id)">
+                                    <td>
+                                        <div class="expiry-product">
+                                            <div class="expiry-product-icon">
+                                                <i class="fa fa-cube"/>
+                                            </div>
+                                            <div>
+                                                <strong><t t-esc="lot.product"/></strong>
+                                                <small>Stock Lot</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="expiry-lot-name"><t t-esc="lot.lot_name"/></span>
+                                    </td>
+                                    <td class="text-end">
+                                        <strong><t t-esc="formatQuantity(lot.quantity)"/></strong>
+                                    </td>
+                                    <td>
+                                        <div class="expiry-location">
+                                            <i class="fa fa-map-marker"/>
+                                            <span><t t-esc="lot.location"/></span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="expiry-date">
+                                            <i class="fa fa-calendar-o me-1"/><t t-esc="lot.expiration_date"/>
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <t t-if="lot.days_remaining &lt; 0">
+                                            <span class="expiry-days expired"><t t-esc="lot.days_remaining"/> days</span>
+                                        </t>
+                                        <t t-elif="lot.days_remaining == 0">
+                                            <span class="expiry-days critical">Today</span>
+                                        </t>
+                                        <t t-else="">
+                                            <span t-attf-class="expiry-days #{lot.status}"><t t-esc="lot.days_remaining"/> days</span>
+                                        </t>
+                                    </td>
+                                    <td class="text-center">
+                                        <span t-attf-class="expiry-status-badge #{lot.status}">
+                                            <t t-if="lot.status == 'critical'"><i class="fa fa-exclamation-circle"/></t>
+                                            <t t-elif="lot.status == 'expired'"><i class="fa fa-times-circle"/></t>
+                                            <t t-else=""><i class="fa fa-clock-o"/></t>
+                                            <t t-esc="lot.status_label"/>
+                                        </span>
+                                    </td>
+                                    <td class="text-end">
+                                        <span class="expiry-risk-value"><t t-esc="formatCurrency(lot.value_at_risk)"/></span>
+                                    </td>
+                                    <td class="text-center">
+                                        <button type="button" class="btn btn-sm btn-outline-primary expiry-notify-btn" title="Send Expiry Notification" t-on-click.stop="() => this.notifyLot(lot.id)">
+                                            <i class="fa fa-bell"/>
+                                        </button>
+                                    </td>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+
+            </div>
+
+        </div>
+    </t>
+
+</templates>

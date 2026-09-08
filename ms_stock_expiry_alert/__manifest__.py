@@ -27,6 +27,13 @@
         'views/menus.xml',
     ],
 
+    'assets': {
+        'web.assets_backend': [
+            'ms_stock_expiry_alert/static/src/scss/expiry_dashboard.scss',
+            'ms_stock_expiry_alert/static/src/js/expiry_dashboard.js',
+            'ms_stock_expiry_alert/static/src/xml/expiry_dashboard_template.xml',
+        ],
+    },
 
     'images': [
         'static/description/banner.png',

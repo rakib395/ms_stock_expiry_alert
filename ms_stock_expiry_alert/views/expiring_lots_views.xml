@@ -229,4 +229,9 @@
 
     </record>
 
+    <record id="action_stock_expiry_dashboard" model="ir.actions.client">
+        <field name="name">Expiry Dashboard</field>
+        <field name="tag">ms_stock_expiry_dashboard_tag</field>
+    </record>
+
 </odoo>

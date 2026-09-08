@@ -4,7 +4,17 @@
     <menuitem
         id="menu_stock_expiry_alert_root"
         name="Stock Expiry Alert"
+        web_icon="stock,static/description/icon.png"
         sequence="50"
+        groups="stock.group_stock_user"
+    />
+
+    <menuitem
+        id="menu_stock_expiry_dashboard"
+        name="Dashboard"
+        parent="menu_stock_expiry_alert_root"
+        action="action_stock_expiry_dashboard"
+        sequence="1"
         groups="stock.group_stock_user"
     />
 

@@ -189,3 +189,76 @@ class StockLot(models.Model):
         })
 
         return True
+
+    @api.model
+    def get_expiry_dashboard_kpis(self):
+
+        domain_base = [('expiration_date', '!=', False)]
+        
+        alert_lots = self.search(domain_base + [('expiry_alert_status', 'in', ['warning', 'critical', 'expired'])])
+        
+        critical_lots = alert_lots.filtered(lambda l: l.expiry_alert_status == 'critical')
+        expired_lots = alert_lots.filtered(lambda l: l.expiry_alert_status == 'expired')
+        
+        total_val_at_risk = sum(alert_lots.mapped('expiry_value_at_risk'))
+
+        return {
+            'within_threshold': len(alert_lots),
+            'critical': len(critical_lots),
+            'expired': len(expired_lots),
+            'value_at_risk': total_val_at_risk,
+        }
+
+    @api.model
+    def get_expiry_dashboard_lots(self):
+        domain = [
+            ('expiration_date', '!=', False),
+            ('expiry_alert_status', 'in', [
+                'warning',
+                'critical',
+                'expired',
+            ]),
+        ]
+
+        lots = self.search(
+            domain,
+            order='expiration_date asc',
+            limit=50,
+        )
+
+        status_labels = {
+            'warning': 'Warning',
+            'critical': 'Critical',
+            'expired': 'Expired',
+        }
+
+        result = []
+
+        for lot in lots:
+            result.append({
+                'id': lot.id,
+                'product': lot.product_id.display_name or '-',
+                'lot_name': lot.name or '-',
+                'quantity': lot.expiry_stock_quantity,
+                'location': (
+                    lot.expiry_stock_location_id.display_name
+                    if lot.expiry_stock_location_id
+                    else '-'
+                ),
+                'expiration_date': (
+                    fields.Datetime.to_datetime(
+                        lot.expiration_date
+                    ).strftime('%d %b %Y')
+                    if lot.expiration_date
+                    else '-'
+                ),
+                'days_remaining': lot.expiry_days_remaining,
+                'status': lot.expiry_alert_status,
+                'status_label': status_labels.get(
+                    lot.expiry_alert_status,
+                    lot.expiry_alert_status.title()
+                ),
+                'value_at_risk': lot.expiry_value_at_risk,
+            })
+
+        return result
