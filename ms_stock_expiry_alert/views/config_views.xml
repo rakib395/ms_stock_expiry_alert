@@ -80,7 +80,7 @@
 
                         <group>
                             <field name="check_frequency"/>
-                            <field name="check_time"/>
+                            <field name="check_time" widget="float_time"/>
                         </group>
 
                         <group>
@@ -94,19 +94,16 @@
 
                     <group string="Notification Settings">
 
-                        <group>
-                            <field name="recipient_ids"
-                                   widget="many2many_tags"/>
+                            <field name="recipient_ids" invisible="1"/>
 
-                            <field name="recipient_partner_ids"
-                                   widget="many2many_tags"/>
-                        </group>
-
-                        <group>
+                            <field name="recipient_partner_ids" 
+                                    widget="many2many_tags" 
+                                    domain="[('user_ids.share', '=', False)]" 
+                                    options="{'no_create': True}"/>
+                      
                             <field name="delivery_daily_digest"/>
 
-                            <field name="delivery_immediate_critical"/>
-                        </group>
+                            <field name="delivery_immediate_critical"/> 
 
                     </group>
 
@@ -155,8 +152,21 @@
 
                 </sheet>
 
+                <chatter/>
+
             </form>
 
+        </field>
+    </record>
+
+    <record id="view_ms_stock_expiry_config_search" model="ir.ui.view">
+        <field name="name">ms.stock.expiry.config.search</field>
+        <field name="model">ms.stock.expiry.config</field>
+        <field name="arch" type="xml">
+            <search string="Stock Expiry Alert Configuration Search">
+                <field name="name"/>
+                <filter string="Archived" name="inactive" domain="[('active', '=', False)]"/>
+            </search>
         </field>
     </record>
 
@@ -165,6 +175,8 @@
         <field name="res_model">ms.stock.expiry.config</field>
         <field name="view_mode">list,form</field>
         <field name="view_id" ref="view_ms_stock_expiry_config_list"/>
+        <field name="search_view_id" ref="view_ms_stock_expiry_config_search"/>
+        <field name="context">{'active_test': False}</field>
     </record>
 
 </odoo>

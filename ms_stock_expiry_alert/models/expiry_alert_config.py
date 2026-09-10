@@ -6,23 +6,27 @@ from odoo.exceptions import ValidationError
 class StockExpiryAlertConfig(models.Model):
     _name = 'ms.stock.expiry.config'
     _description = 'Stock Expiry Alert Configuration'
+    _inherit = ['mail.thread']
     _order = 'id desc'
 
     name = fields.Char(
         string='Configuration Name',
         required=True,
         default='Stock Expiry Alert Configuration',
+        tracking=True,
     )
 
     active = fields.Boolean(
         string='Active',
         default=True,
+        tracking=True,
     )
 
     alert_threshold = fields.Integer(
         string='Alert Threshold (Days)',
         required=True,
         default=30,
+        tracking=True,
         help=(
             'Lots/serials expiring within this number of days '
             'will appear in the expiry alert list.'
@@ -33,6 +37,7 @@ class StockExpiryAlertConfig(models.Model):
         string='Critical Threshold (Days)',
         required=True,
         default=7,
+        tracking=True,
         help=(
             'Lots/serials with this many or fewer days remaining '
             'will be marked as Critical.'
@@ -48,11 +53,13 @@ class StockExpiryAlertConfig(models.Model):
         string='Check Frequency',
         required=True,
         default='daily',
+        tracking=True,
     )
 
     check_time = fields.Float(
         string='Check Time',
         default=6.0,
+        tracking=True,
         help='Time of day when the expiry check should run.',
     )
 
@@ -62,6 +69,7 @@ class StockExpiryAlertConfig(models.Model):
         'config_id',
         'user_id',
         string='Recipients',
+        tracking=True,
         help='Users who should receive expiry notifications.',
     )
 
@@ -71,18 +79,21 @@ class StockExpiryAlertConfig(models.Model):
         'config_id',
         'partner_id',
         string='Email Recipients',
+        tracking=True,
         help='Additional email recipients for expiry notifications.',
     )
 
     delivery_daily_digest = fields.Boolean(
         string='Daily Digest',
         default=True,
+        tracking=True,
         help='Send a daily summary of expiring lots.',
     )
 
     delivery_immediate_critical = fields.Boolean(
         string='Immediately (Critical Only)',
         default=True,
+        tracking=True,
         help='Send an immediate email when a lot becomes Critical.',
     )
 
@@ -92,12 +103,14 @@ class StockExpiryAlertConfig(models.Model):
         'config_id',
         'warehouse_id',
         string='Warehouses Included',
+        tracking=True,
         help='Leave empty to monitor all warehouses.',
     )
 
     all_warehouses = fields.Boolean(
         string='All Warehouses',
         default=True,
+        tracking=True,
     )
 
     category_ids = fields.Many2many(
@@ -106,28 +119,33 @@ class StockExpiryAlertConfig(models.Model):
         'config_id',
         'category_id',
         string='Product Categories',
+        tracking=True,
         help='Leave empty to monitor all product categories.',
     )
 
     all_categories = fields.Boolean(
         string='All Categories',
         default=True,
+        tracking=True,
     )
 
     include_expired_lots = fields.Boolean(
         string='Include Already-Expired Lots',
         default=True,
+        tracking=True,
         help='Include expired lots in the alert list and digest.',
     )
 
     last_check_datetime = fields.Datetime(
         string='Last Check',
         readonly=True,
+        tracking=True,
     )
 
     last_digest_datetime = fields.Datetime(
         string='Last Digest',
         readonly=True,
+        tracking=True,
     )
 
     @api.constrains('alert_threshold', 'critical_threshold')
@@ -150,6 +168,31 @@ class StockExpiryAlertConfig(models.Model):
                         "to Alert Threshold."
                     )
                 )
+
+    @api.constrains('active')
+    def _check_single_active_config(self):
+        for record in self:
+            if record.active:
+                active_configs = self.search([
+                    ('active', '=', True),
+                    ('id', '!=', record.id)
+                ])
+                if active_configs:
+                    raise ValidationError(
+                        _("An active configuration already exists! Only one configuration can be active at a time.")
+                    )
+    @api.constrains('name')
+    def _check_unique_name(self):
+        for record in self:
+            if record.name:
+                existing = self.search([
+                    ('name', '=ilike', record.name.strip()),
+                    ('id', '!=', record.id)
+                ])
+                if existing:
+                    raise ValidationError(
+                        _("A configuration with the name '%s' already exists! Please use a unique name.") % record.name
+                    )
 
     @api.model
     def get_active_config(self):
@@ -252,6 +295,11 @@ class StockExpiryAlertConfig(models.Model):
         if not template:
             return False
 
+        recipients = self._get_recipient_emails()
+        
+        if not recipients:
+            return False
+
         email_values = {}
 
         recipients = self._get_recipient_emails()
@@ -290,6 +338,23 @@ class StockExpiryAlertConfig(models.Model):
 
         return list(emails)
 
+    def _should_run_now(self):
+        self.ensure_one()
+        if not self.last_check_datetime:
+            return True
+
+        now = fields.Datetime.now()
+        diff = now - self.last_check_datetime
+
+        if self.check_frequency == 'daily' and diff.total_seconds() < 86400:
+            return False
+        elif self.check_frequency == 'twice_daily' and diff.total_seconds() < 43200:
+            return False
+        elif self.check_frequency == 'weekly' and diff.days < 7:
+            return False
+
+        return True
+    
     @api.model
     def cron_check_expiry(self):
 
@@ -298,6 +363,9 @@ class StockExpiryAlertConfig(models.Model):
         ])
 
         for config in configs:
+            if not config._should_run_now():
+                continue
+
             lots = config._get_monitored_lots()
 
             for lot in lots:
@@ -346,6 +414,11 @@ class StockExpiryAlertConfig(models.Model):
                 continue
 
             recipients = config._get_recipient_emails()
+            if not recipients:
+                config.write({
+                    'last_digest_datetime': fields.Datetime.now(),
+                })
+                continue
 
             email_values = {}
 
@@ -370,6 +443,10 @@ class StockExpiryAlertConfig(models.Model):
         self.ensure_one()
 
         self.cron_check_expiry()
+
+        self.write({
+            'last_check_datetime': fields.Datetime.now()
+        })
 
         return {
             'type': 'ir.actions.client',
@@ -396,6 +473,10 @@ class StockExpiryAlertConfig(models.Model):
             )
 
         self.cron_send_daily_digest()
+
+        self.write({
+            'last_digest_datetime': fields.Datetime.now()
+        })
 
         return {
             'type': 'ir.actions.client',

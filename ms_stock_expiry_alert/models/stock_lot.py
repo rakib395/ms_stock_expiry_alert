@@ -180,7 +180,22 @@ class StockLot(models.Model):
                 )
             )
 
-        config.send_lot_expiry_notification(self)
+        recipients = config._get_recipient_emails()
+        if not recipients:
+            raise UserError(
+                _(
+                    'No recipient email configured in Stock Expiry Alert Configuration. '
+                    'Please add recipients before sending notifications.'
+                )
+            )
+
+        sent = config.send_lot_expiry_notification(self)
+        if not sent:
+            raise UserError(
+                _(
+                    'Failed to send notification. Please check mail template and recipients configuration.'
+                )
+            )
 
         self.write({
             'expiry_alert_last_notified': fields.Datetime.now(),
@@ -188,7 +203,16 @@ class StockLot(models.Model):
                 self.expiry_alert_notification_count + 1,
         })
 
-        return True
+        return {
+            'type': 'ir.actions.client',
+            'tag': 'display_notification',
+            'params': {
+                'title': _('Notification Sent'),
+                'message': _('Expiry notification sent successfully.'),
+                'type': 'success',
+                'sticky': False,
+            },
+        }
 
     @api.model
     def get_expiry_dashboard_kpis(self):

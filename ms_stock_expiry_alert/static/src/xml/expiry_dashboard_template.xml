@@ -66,13 +66,32 @@
 
             <div class="expiry-table-card">
 
-                <div class="expiry-table-header">
+                <div class="expiry-table-header d-flex justify-content-between align-items-center">
                     <div>
                         <h3><i class="fa fa-cubes me-2"/>Expiring Lots</h3>
                         <span>Lots requiring attention based on the configured expiry thresholds.</span>
                     </div>
-                    <div class="expiry-table-count">
-                        <t t-esc="lots.length"/> <span>records</span>
+                    
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted fw-bold" t-esc="pageRangeText"/>
+
+                        <div class="btn-group btn-group-sm">
+
+                            <button class="btn btn-outline-secondary" 
+                                    t-att-disabled="state.currentPage === 1"
+                                    t-on-click="() => this.changePage(-1)"
+                                    title="Previous Page">
+                                <i class="fa fa-chevron-left"/>
+                            </button>
+
+                            <button class="btn btn-outline-secondary" 
+                                    t-att-disabled="state.currentPage * state.pageSize >= totalLots"
+                                    t-on-click="() => this.changePage(1)"
+                                    title="Next Page">
+                                <i class="fa fa-chevron-right"/>
+                            </button>
+
+                        </div>
                     </div>
                 </div>
 
@@ -102,8 +121,9 @@
                                 <th class="text-center">Action</th>
                             </tr>
                         </thead>
+                        
                         <tbody>
-                            <t t-foreach="lots" t-as="lot" t-key="lot.id">
+                            <t t-foreach="paginatedLots" t-as="lot" t-key="lot.id">
                                 <tr class="expiry-lot-row" t-on-click="() => this.openLot(lot.id)">
                                     <td>
                                         <div class="expiry-product">

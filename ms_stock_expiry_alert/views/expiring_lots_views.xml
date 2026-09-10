@@ -21,8 +21,9 @@
                 <field name="expiry_days_remaining"/>
                 <field name="expiry_alert_status" 
                         widget="badge" 
-                        decoration-danger="expiry_alert_status in ('critical', 'expired')" 
-                        decoration-warning="expiry_alert_status == 'warning'"/>
+                        decoration-danger="expiry_alert_status == 'critical'" 
+                        decoration-warning="expiry_alert_status == 'warning'"
+                        decoration-muted="expiry_alert_status == 'expired'"/>
                 <field name="expiry_value_at_risk"/>
                 <field name="expiry_alert_last_notified"/>
 
@@ -78,8 +79,9 @@
                             <field name="expiry_days_remaining"/>
                             <field name="expiry_alert_status" 
                                     widget="badge" 
-                                    decoration-danger="expiry_alert_status in ('critical', 'expired')" 
-                                    decoration-warning="expiry_alert_status == 'warning'"/>
+                                    decoration-danger="expiry_alert_status == 'critical'" 
+                                    decoration-warning="expiry_alert_status == 'warning'"
+                                    decoration-muted="expiry_alert_status == 'expired'"/>
                             <field name="expiry_alert_enabled"/>
                         </group>
 
@@ -110,6 +112,8 @@
                     </group>
 
                 </sheet>
+
+                <chatter/>
 
             </form>
 
