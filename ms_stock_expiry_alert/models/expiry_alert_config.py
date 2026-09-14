@@ -179,18 +179,37 @@ class StockExpiryAlertConfig(models.Model):
                     )
                 )
 
-    @api.constrains('active')
-    def _check_single_active_config(self):
-        for record in self:
-            if record.active:
+    @api.model_create_multi
+    def create(self, vals_list):
+        for vals in vals_list:
+            if vals.get('active', True):
                 active_configs = self.search([
                     ('active', '=', True),
-                    ('id', '!=', record.id)
                 ])
+
                 if active_configs:
-                    raise ValidationError(
-                        _("An active configuration already exists! Only one configuration can be active at a time.")
-                    )
+                    active_configs.write({
+                        'active': False,
+                    })
+
+                break
+
+        return super().create(vals_list)
+
+
+    def write(self, vals):
+        if vals.get('active') is True:
+            active_configs = self.search([
+                ('active', '=', True),
+                ('id', 'not in', self.ids),
+            ])
+
+            if active_configs:
+                active_configs.write({
+                    'active': False,
+                })
+
+        return super().write(vals)
                 
                 
     @api.model
@@ -217,6 +236,32 @@ class StockExpiryAlertConfig(models.Model):
             [('active', '=', True)],
             order='id desc',
             limit=1,
+        )
+
+    def _check_active_for_manual_action(self):
+        self.ensure_one()
+
+        if self.active:
+            return True
+
+        active_config = self.get_active_config()
+
+        if active_config:
+            raise ValidationError(
+                _(
+                    "This configuration is inactive. "
+                    "The active configuration is '%s'. "
+                    "Please activate this configuration before running "
+                    "the action."
+                ) % active_config.name
+            )
+
+        raise ValidationError(
+            _(
+                "This configuration is inactive. "
+                "Please activate this configuration before running "
+                "the action."
+            )
         )
 
     def _get_monitored_lots(self):
@@ -318,11 +363,6 @@ class StockExpiryAlertConfig(models.Model):
             return False
 
         email_values = {}
-
-        recipients = self._get_recipient_emails()
-
-        if recipients:
-            email_values['email_to'] = ','.join(recipients)
 
         template.send_mail(
             lot.id,
@@ -458,7 +498,7 @@ class StockExpiryAlertConfig(models.Model):
 
     def action_run_expiry_check(self):
         self.ensure_one()
-
+        self._check_active_for_manual_action()
         self.cron_check_expiry()
 
         self.write({
@@ -484,7 +524,8 @@ class StockExpiryAlertConfig(models.Model):
 
     def action_send_daily_digest(self):
         self.ensure_one()
-
+        self._check_active_for_manual_action()
+        
         if not self.delivery_daily_digest:
             raise ValidationError(
                 _(
