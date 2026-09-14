@@ -123,15 +123,25 @@ class StockExpiryAlertConfig(models.Model):
         help='Leave empty to monitor all product categories.',
     )
 
-    all_categories = fields.Boolean(
-        string='All Categories',
-        default=True,
+    category_scope = fields.Selection(
+        [
+            ('all', 'All categories with expiry tracking enabled'),
+            ('selected', 'Selected Categories Only'),
+        ],
+        string='Product Categories',
+        default='all',
+        required=True,
         tracking=True,
     )
 
-    include_expired_lots = fields.Boolean(
+    include_expired_lots = fields.Selection(
+        [
+            ('yes', 'Yes, flag separately'),
+            ('no', 'No'),
+        ],
         string='Include Already-Expired Lots',
-        default=True,
+        default='yes',
+        required=True,
         tracking=True,
         help='Include expired lots in the alert list and digest.',
     )
@@ -181,6 +191,7 @@ class StockExpiryAlertConfig(models.Model):
                     raise ValidationError(
                         _("An active configuration already exists! Only one configuration can be active at a time.")
                     )
+                
     @api.constrains('name')
     def _check_unique_name(self):
         for record in self:
@@ -193,7 +204,14 @@ class StockExpiryAlertConfig(models.Model):
                     raise ValidationError(
                         _("A configuration with the name '%s' already exists! Please use a unique name.") % record.name
                     )
-
+                
+    def copy(self, default=None):
+        default = dict(default or {})
+        if 'name' not in default:
+            default['name'] = _("%s (Copy)") % self.name
+        default['active'] = False
+        return super().copy(default)
+    
     @api.model
     def get_active_config(self):
         return self.search(
@@ -210,7 +228,7 @@ class StockExpiryAlertConfig(models.Model):
             ('product_id', '!=', False),
         ]
 
-        if not self.include_expired_lots:
+        if self.include_expired_lots == 'no':
             domain.append(
                 ('expiration_date', '>=', fields.Datetime.now())
             )
@@ -233,7 +251,7 @@ class StockExpiryAlertConfig(models.Model):
             if expiry_date > alert_date and expiry_date >= today:
                 continue
 
-            if not self.all_categories and self.category_ids:
+            if self.category_scope == 'selected' and self.category_ids:
                 if lot.product_id.categ_id not in self.category_ids:
                     continue
 
@@ -458,6 +476,10 @@ class StockExpiryAlertConfig(models.Model):
                 ),
                 'type': 'success',
                 'sticky': False,
+                'next': {
+                    'type': 'ir.actions.client',
+                    'tag': 'reload',
+                },
             },
         }
 
@@ -488,5 +510,9 @@ class StockExpiryAlertConfig(models.Model):
                 ),
                 'type': 'success',
                 'sticky': False,
+                'next': {
+                    'type': 'ir.actions.client',
+                    'tag': 'reload',
+                },
             },
         }

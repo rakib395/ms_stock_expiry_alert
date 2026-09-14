@@ -198,31 +198,75 @@
 }
 
 .expiry-lots-table {
-    margin: 0;
+    width: 100% !important;
+    max-width: 100% !important;
+
+    margin: 0 !important;
+    padding: 0 !important;
+
+    table-layout: fixed !important;
+    border-collapse: collapse !important;
 
     thead {
+        width: 100% !important;
         background: #f9fafb;
 
+        tr {
+            width: 100% !important;
+        }
+
         th {
-            padding: 8px 12px; 
+            padding: 12px 14px !important;
             border-bottom: 1px solid #e5e7eb;
+
             color: #6b7280;
-            font-size: 12px; 
+            font-size: 12px;
             font-weight: 650;
             text-transform: uppercase;
             letter-spacing: 0.35px;
+
             white-space: nowrap;
+            vertical-align: middle;
+
+            box-sizing: border-box !important;
+
+            &:nth-child(1) { width: 22% !important; padding-left: 20px !important; } /* Product */
+            &:nth-child(2) { width: 12% !important; } /* Lot / Serial */
+            &:nth-child(3) { width: 9% !important; text-align: right !important; } /* Quantity */
+            &:nth-child(4) { width: 13% !important; padding-left: 20px !important; } /* Location (গ্যাপ ঠিক করার জন্য) */
+            &:nth-child(5) { width: 12% !important; } /* Expiry Date */
+            &:nth-child(6) { width: 10% !important; text-align: center !important; } /* Remaining */
+            &:nth-child(7) { width: 10% !important; text-align: center !important; } /* Status */
+            &:nth-child(8) { width: 8% !important; text-align: right !important; } /* Value at Risk */
+            &:nth-child(9) { width: 4% !important; text-align: center !important; padding-right: 20px !important; } /* Action */
         }
     }
 
     tbody {
+        width: 100% !important;
+
         tr {
+            width: 100% !important;
+
             td {
-                padding: 6px 12px; 
+                padding: 10px 14px !important;
                 vertical-align: middle;
                 border-bottom: 1px solid #f0f1f3;
+
                 color: #374151;
-                font-size: 13px; 
+                font-size: 13px;
+
+                box-sizing: border-box !important;
+
+                &:nth-child(1) { width: 22% !important; padding-left: 20px !important; }
+                &:nth-child(2) { width: 12% !important; }
+                &:nth-child(3) { width: 9% !important; text-align: right !important; }
+                &:nth-child(4) { width: 13% !important; padding-left: 20px !important; }
+                &:nth-child(5) { width: 12% !important; }
+                &:nth-child(6) { width: 10% !important; text-align: center !important; }
+                &:nth-child(7) { width: 10% !important; text-align: center !important; }
+                &:nth-child(8) { width: 8% !important; text-align: right !important; }
+                &:nth-child(9) { width: 4% !important; text-align: center !important; padding-right: 20px !important; }
             }
 
             &:last-child td {
@@ -232,50 +276,53 @@
     }
 }
 
-.expiry-lot-row {
-    cursor: pointer;
-
-    transition: background 0.15s ease;
-
-    &:hover {
-        background: #f8fafc;
-    }
-}
-
 .expiry-product {
     display: flex;
     align-items: center;
-    gap: 8px; 
-    min-width: 170px;
+    gap: 8px;
+
+    min-width: 0 !important;
+    max-width: 100% !important;
 
     .expiry-product-icon {
-        width: 28px; 
+        width: 28px;
         height: 28px;
+
         display: flex;
         align-items: center;
         justify-content: center;
+
         flex: 0 0 28px;
+
         border-radius: 6px;
+
         background: #f3f4f6;
         color: #6b7280;
+
         font-size: 12px;
     }
 
     strong {
         display: block;
-        max-width: 220px;
+
+        max-width: 100%;
+
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+
         color: #111827;
-        font-size: 13px; 
+
+        font-size: 13px;
         font-weight: 600;
         line-height: 1.2;
     }
 
     small {
         display: block;
+
         margin-top: 1px;
+
         color: #9ca3af;
         font-size: 11px;
     }
@@ -283,10 +330,20 @@
 
 .expiry-lot-name {
     display: inline-block;
-    padding: 2px 6px; 
+
+    max-width: 100%;
+
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    padding: 2px 6px;
+
     border-radius: 4px;
+
     background: #f3f4f6;
     color: #374151;
+
     font-family: monospace;
     font-size: 11px;
     font-weight: 600;
@@ -297,15 +354,20 @@
     align-items: center;
     gap: 7px;
 
+    min-width: 0;
+    max-width: 100%;
+
     color: #4b5563;
 
     i {
         color: #9ca3af;
         font-size: 13px;
+
+        flex: 0 0 auto;
     }
 
     span {
-        max-width: 170px;
+        max-width: 100%;
 
         overflow: hidden;
         text-overflow: ellipsis;
@@ -325,6 +387,7 @@
 
 .expiry-days {
     display: inline-flex;
+
     align-items: center;
     justify-content: center;
 
@@ -355,7 +418,9 @@
 
 .expiry-status-badge {
     display: inline-flex;
+
     align-items: center;
+
     gap: 5px;
 
     padding: 3px 8px;
@@ -383,15 +448,20 @@
 
 .expiry-risk-value {
     color: #374151;
+
     font-weight: 600;
+
     white-space: nowrap;
 }
 
 .expiry-notify-btn {
-    width: 28px;  
+    width: 28px;
     height: 28px;
+
     padding: 0;
+
     border-radius: 5px;
+
     font-size: 12px;
 
     &:hover {
@@ -403,7 +473,9 @@
     min-height: 260px;
 
     display: flex;
+
     flex-direction: column;
+
     align-items: center;
     justify-content: center;
 
@@ -413,6 +485,7 @@
 
     i {
         margin-bottom: 14px;
+
         font-size: 34px;
     }
 
@@ -420,6 +493,7 @@
         margin: 0 0 5px;
 
         color: #374151;
+
         font-size: 16px;
     }
 
@@ -427,6 +501,7 @@
         margin: 0;
 
         color: #9ca3af;
+
         font-size: 13px;
     }
 }
@@ -460,4 +535,26 @@
         flex-direction: column;
     }
 
+    .expiry-table-card {
+        overflow-x: auto;
+    }
+
+    .expiry-lots-table {
+        min-width: 1100px !important;
+        width: 1100px !important;
+        table-layout: fixed !important;
+    }
+
+    .expiry-lots-table thead th,
+    .expiry-lots-table tbody td {
+        &:nth-child(1) { width: 220px !important; }
+        &:nth-child(2) { width: 120px !important; }
+        &:nth-child(3) { width: 90px !important; }
+        &:nth-child(4) { width: 130px !important; }
+        &:nth-child(5) { width: 120px !important; }
+        &:nth-child(6) { width: 100px !important; }
+        &:nth-child(7) { width: 100px !important; }
+        &:nth-child(8) { width: 110px !important; }
+        &:nth-child(9) { width: 60px !important; }
+    }
 }

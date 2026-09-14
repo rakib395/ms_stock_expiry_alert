@@ -117,23 +117,36 @@ export class ExpiryDashboard extends Component {
 
     async notifyLot(lotId) {
         try {
-            await this.orm.call(
+            const res = await this.orm.call(
                 "stock.lot",
                 "action_notify_expiry",
                 [[lotId]]
             );
 
-            this.notification.add(
-                "Expiry notification sent successfully.",
-                {
-                    type: "success",
-                }
-            );
+            if (res && res.type === "ir.actions.client") {
+                await this.action.doAction(res);
+            } else {
+                this.notification.add(
+                    "Expiry notification sent successfully.",
+                    {
+                        type: "success",
+                    }
+                );
+            }
 
             await this.loadDashboard();
 
         } catch (error) {
-            throw error;
+            const errorMsg = error.data?.message || error.message || "Failed to send notification.";
+
+            this.notification.add(
+                errorMsg,
+                {
+                    title: "Warning",
+                    type: "warning",
+                    sticky: false,
+                }
+            );
         }
     }
 

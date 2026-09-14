@@ -153,49 +153,84 @@ class StockLot(models.Model):
         self.ensure_one()
 
         if not self.expiration_date:
-            raise UserError(
-                _(
-                    'This lot/serial number does not have '
-                    'an expiry date.'
-                )
-            )
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Warning'),
+                    'message': _(
+                        'This lot/serial number does not have '
+                        'an expiry date.'
+                    ),
+                    'type': 'warning',
+                    'sticky': False,
+                },
+            }
 
         config = self.env[
             'ms.stock.expiry.config'
         ].get_active_config()
 
         if not config:
-            raise UserError(
-                _(
-                    'No active Stock Expiry Alert '
-                    'configuration was found.'
-                )
-            )
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Warning'),
+                    'message': _(
+                        'No active Stock Expiry Alert '
+                        'configuration was found.'
+                    ),
+                    'type': 'warning',
+                    'sticky': False,
+                },
+            }
 
         if self.expiry_alert_status == 'normal':
-            raise UserError(
-                _(
-                    'This lot is not currently within the '
-                    'configured expiry alert threshold.'
-                )
-            )
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Warning'),
+                    'message': _(
+                        'This lot is not currently within the '
+                        'configured expiry alert threshold.'
+                    ),
+                    'type': 'warning',
+                    'sticky': False,
+                },
+            }
 
         recipients = config._get_recipient_emails()
         if not recipients:
-            raise UserError(
-                _(
-                    'No recipient email configured in Stock Expiry Alert Configuration. '
-                    'Please add recipients before sending notifications.'
-                )
-            )
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Warning'),
+                    'message': _(
+                        'No recipient email configured in Stock Expiry Alert Configuration. '
+                        'Please add recipients before sending notifications.'
+                    ),
+                    'type': 'warning',
+                    'sticky': False,
+                },
+            }
 
         sent = config.send_lot_expiry_notification(self)
         if not sent:
-            raise UserError(
-                _(
-                    'Failed to send notification. Please check mail template and recipients configuration.'
-                )
-            )
+            return {
+                'type': 'ir.actions.client',
+                'tag': 'display_notification',
+                'params': {
+                    'title': _('Warning'),
+                    'message': _(
+                        'Failed to send notification. Please check mail template and recipients configuration.'
+                    ),
+                    'type': 'warning',
+                    'sticky': False,
+                },
+            }
 
         self.write({
             'expiry_alert_last_notified': fields.Datetime.now(),
@@ -211,6 +246,10 @@ class StockLot(models.Model):
                 'message': _('Expiry notification sent successfully.'),
                 'type': 'success',
                 'sticky': False,
+                'next': {
+                    'type': 'ir.actions.client',
+                    'tag': 'reload',
+                },
             },
         }
 

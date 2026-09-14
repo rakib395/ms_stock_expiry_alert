@@ -124,24 +124,19 @@
                     </group>
 
                     <group string="Product Category Scope">
-
                         <group>
-                            <field name="all_categories"/>
+                            <field name="category_scope"/>
+                            <field name="category_ids" 
+                                widget="many2many_tags" 
+                                options="{'no_create': True}"
+                                invisible="category_scope != 'selected'" 
+                                required="category_scope == 'selected'"/>
                         </group>
-
-                        <group
-                            invisible="all_categories"
-                        >
-                            <field name="category_ids"
-                                   widget="many2many_tags"
-                                   options="{'no_create': True}"/>
-                        </group>
-
                     </group>
 
                     <group string="Expired Lots">
 
-                        <field name="include_expired_lots"/>
+                        <field name="include_expired_lots" widget="radio"/>
 
                         <div class="text-muted">
                             When enabled, already-expired lots will also
