@@ -192,24 +192,23 @@ class StockExpiryAlertConfig(models.Model):
                         _("An active configuration already exists! Only one configuration can be active at a time.")
                     )
                 
-    @api.constrains('name')
-    def _check_unique_name(self):
-        for record in self:
-            if record.name:
-                existing = self.search([
-                    ('name', '=ilike', record.name.strip()),
-                    ('id', '!=', record.id)
-                ])
-                if existing:
-                    raise ValidationError(
-                        _("A configuration with the name '%s' already exists! Please use a unique name.") % record.name
-                    )
                 
+    @api.model
+    def default_get(self, fields_list):
+        res = super().default_get(fields_list)
+        if res.get('include_expired_lots') not in ['yes', 'no']:
+            res['include_expired_lots'] = 'yes'
+        return res
+
     def copy(self, default=None):
         default = dict(default or {})
         if 'name' not in default:
-            default['name'] = _("%s (Copy)") % self.name
+            default['name'] = _("%s (Copy)") % (self.name or '')
         default['active'] = False
+
+        if default.get('include_expired_lots') not in ['yes', 'no']:
+            default['include_expired_lots'] = self.include_expired_lots if self.include_expired_lots in ['yes', 'no'] else 'yes'
+
         return super().copy(default)
     
     @api.model
