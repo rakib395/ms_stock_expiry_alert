@@ -1,5 +1,8 @@
 .o_expiry_dashboard {
-    min-height: 100%;
+    height: 100%;
+    max-height: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
     padding: 28px 32px 50px;
     background: #f6f7f9;
 }
@@ -200,10 +203,8 @@
 .expiry-lots-table {
     width: 100% !important;
     max-width: 100% !important;
-
     margin: 0 !important;
     padding: 0 !important;
-
     table-layout: fixed !important;
     border-collapse: collapse !important;
 
@@ -218,27 +219,24 @@
         th {
             padding: 12px 14px !important;
             border-bottom: 1px solid #e5e7eb;
-
             color: #6b7280;
             font-size: 12px;
             font-weight: 650;
             text-transform: uppercase;
             letter-spacing: 0.35px;
-
             white-space: nowrap;
             vertical-align: middle;
-
             box-sizing: border-box !important;
 
-            &:nth-child(1) { width: 22% !important; padding-left: 20px !important; } /* Product */
-            &:nth-child(2) { width: 12% !important; } /* Lot / Serial */
-            &:nth-child(3) { width: 9% !important; text-align: right !important; } /* Quantity */
-            &:nth-child(4) { width: 13% !important; padding-left: 20px !important; } /* Location (গ্যাপ ঠিক করার জন্য) */
-            &:nth-child(5) { width: 12% !important; } /* Expiry Date */
-            &:nth-child(6) { width: 10% !important; text-align: center !important; } /* Remaining */
-            &:nth-child(7) { width: 10% !important; text-align: center !important; } /* Status */
-            &:nth-child(8) { width: 8% !important; text-align: right !important; } /* Value at Risk */
-            &:nth-child(9) { width: 4% !important; text-align: center !important; padding-right: 20px !important; } /* Action */
+            &:nth-child(1) { width: 19% !important; padding-left: 18px !important; } 
+            &:nth-child(2) { width: 12% !important; } 
+            &:nth-child(3) { width: 9% !important; text-align: right !important; padding-right: 18px !important; } 
+            &:nth-child(4) { width: 14% !important; padding-left: 10px !important; } 
+            &:nth-child(5) { width: 12% !important; } 
+            &:nth-child(6) { width: 10% !important; text-align: center !important; } 
+            &:nth-child(7) { width: 10% !important; text-align: center !important; } 
+            &:nth-child(8) { width: 9% !important; text-align: right !important; padding-right: 18px !important; } 
+            &:nth-child(9) { width: 5% !important; text-align: center !important; padding-right: 16px !important; } 
         }
     }
 
@@ -252,21 +250,19 @@
                 padding: 10px 14px !important;
                 vertical-align: middle;
                 border-bottom: 1px solid #f0f1f3;
-
                 color: #374151;
                 font-size: 13px;
-
                 box-sizing: border-box !important;
 
-                &:nth-child(1) { width: 22% !important; padding-left: 20px !important; }
+                &:nth-child(1) { width: 19% !important; padding-left: 18px !important; }
                 &:nth-child(2) { width: 12% !important; }
-                &:nth-child(3) { width: 9% !important; text-align: right !important; }
-                &:nth-child(4) { width: 13% !important; padding-left: 20px !important; }
+                &:nth-child(3) { width: 9% !important; text-align: right !important; padding-right: 18px !important; }
+                &:nth-child(4) { width: 14% !important; padding-left: 10px !important; }
                 &:nth-child(5) { width: 12% !important; }
                 &:nth-child(6) { width: 10% !important; text-align: center !important; }
                 &:nth-child(7) { width: 10% !important; text-align: center !important; }
-                &:nth-child(8) { width: 8% !important; text-align: right !important; }
-                &:nth-child(9) { width: 4% !important; text-align: center !important; padding-right: 20px !important; }
+                &:nth-child(8) { width: 9% !important; text-align: right !important; padding-right: 18px !important; }
+                &:nth-child(9) { width: 5% !important; text-align: center !important; padding-right: 16px !important; }
             }
 
             &:last-child td {

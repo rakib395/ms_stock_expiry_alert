@@ -4,8 +4,8 @@
     <menuitem
         id="menu_stock_expiry_alert_root"
         name="Stock Expiry Alert"
-        web_icon="stock,static/description/icon.png"
-        sequence="50"
+        parent="stock.menu_stock_inventory_control"
+        sequence="110"
         groups="stock.group_stock_user"
     />
 
